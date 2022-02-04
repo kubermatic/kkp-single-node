@@ -2,21 +2,27 @@
 
 KKP Master setup on a single master/worker k8s node using Kubeone. Leveraging the kubeone addons capability for this implementation.
 
+
+In this **Get Started with KKP** guide, we will be using AWS Cloud as our underlying infrastructure and KKP release v2.18.4.
+
+> For more information on the kubeone configurations for different enviornemnt, checkout the [Creating the kubernetes Cluster using Kubeone](https://docs.kubermatic.com/kubeone/master/tutorials/creating_clusters/) documentation.
+
+The [kubermatic/kkp-on-node](https://github.com/kubermatic/kkp-on-node) contains the required configuration to install KKP on single node k8s with kubeone. Clone or download it, so that you deploy KKP quickly as per the following instructions and get started with it!  
+
 ## Configure the Enviornment
 
-Here for the demo purpose, we are using AWS Cloud as the underlying infrastructure
 ```
 export AWS_ACCESS_KEY_ID=xxxxxxxxxxxxxxx
 export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxx
 ```
 
-## Create Infrasture using Terraform
+## Create the Infrastructure using Terraform
 ```bash
 eval `ssh-agent`
 ssh-add /path/to/.ssh/id_rsa
 make k1-tf-apply PROVIDER=aws
 ```
-> Update the terraform.tfvars with required values. 
+> Update the terraform.tfvars with required values such as `cluster_name`, `ssh_public_key_file`, `ssh_private_key_file`.
 
 > **Important**: Add `untaint` flag with value as `true` in the `output.tf` file as shown below
 ```bash
@@ -28,7 +34,7 @@ output "kubeone_hosts" {
       untaint              = true
 ```
 
-## Prepare the addon configuration
+## Prepare the KKP addon configuration
 > Replace the TODO place holder in addons/kkp yaml definitions. 
 ```bash
 export KKP_DNS=xxx.xxx.xxx.xxx
@@ -46,18 +52,25 @@ sed -i 's/TODO-A-RANDOM-ISSUERCOOKIEKEY/'"$ISSUERCOOKIEKEY"'/g' ./aws/addons/kkp
 sed -i 's/TODO-A-RANDOM-SERVICEACCOUNTKEY/'"$SERVICEACCOUNTKEY"'/g' ./aws/addons/kkp/*.yaml
 ```
 
-## Create k8s cluster using kubeone along with KKP master as addon.
+## Create k8s cluster using kubeone along with KKP master as an addon.
 ```bash
 make k1-apply PROVIDER=aws
 ```
 
+## Configure the Cluster access
+```bash
+export KUBECONFIG=$PWD/aws/<cluster_name>-kubeconfig
+```
+
+## Validate the KKP Master setup
+
 Get the LoadBalancer External IP by following command.
 ```bash
-kubectl get svc -n nginx-ingress-controller
+kubectl get svc -n ingress-nginx
 ```
 > Update DNS mapping with External IP of for nginx ingress controller service. 
 
-Validate the Kubermatic resources and certificates
+Verify the Kubermatic resources and certificates
 ```bash
 kubectl -n kubermatic get deployments,pods
 ```
@@ -88,12 +101,5 @@ make k1-tf-destroy PROVIDER=aws
 
 # Known Open Issues
 
-## FIXME Configuration at Terraform
-* Load Balancer configuration to handle single node configuration. 
-* Security Group rules for single node configuration. 
-* Sequencing of yaml configuration to resolve no match for below no match for crd issue. 
-```
-unable to recognize "aws/addons/kkp/02_cert-manager.yaml": no matches for kind "ClusterIssuer" in version "cert-manager.io/v1"
-unable to recognize "aws/addons/kkp/02_cert-manager.yaml": no matches for kind "ClusterIssuer" in version "cert-manager.io/v1"
-unable to recognize "aws/addons/kkp/05_kubermatic-configuration.yaml": no matches for kind "KubermaticConfiguration" in version "operator.kubermatic.io/v1alpha1"
-```
+* Nginx Ingress Controller Load Balancer configuration - Add the node to backend pool manually.
+> Should be supported in future as part of Feature request[#1822](https://github.com/kubermatic/kubeone/issues/1822)

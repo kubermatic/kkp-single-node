@@ -1,0 +1,21 @@
+apiVersion: operator.kubermatic.io/v1alpha1
+kind: KubermaticConfiguration
+metadata:
+    name: kubermatic
+    namespace: kubermatic
+spec:
+    ingress:
+        domain: TODO_DNS
+        certificateIssuer:
+            apiGroup: null
+            kind: ClusterIssuer
+            name: letsencrypt-prod
+        className: nginx
+    auth:
+        clientID: kubermatic
+        issuerClientID: kubermaticIssuer
+        skipTokenIssuerTLSVerify: true
+        tokenIssuer: https://TODO_DNS/dex
+        issuerClientSecret: TODO-KUBERMATIC-OAUTH-SECRET-FROM-VALUES.YAML
+        issuerCookieKey: TODO-A-RANDOM-ISSUERCOOKIEKEY
+        serviceAccountKey: TODO-A-RANDOM-SERVICEACCOUNTKEY

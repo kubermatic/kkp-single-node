@@ -1,0 +1,282 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: telemetry-system
+
+---
+# Source: telemetry/templates/serviceaccount.yaml
+# Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: telemetry-agent-sa
+  namespace: telemetry-system
+---
+# Source: telemetry/templates/secret.yaml
+# Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: telemetry-client-uuid
+  namespace: telemetry-system
+type: Opaque
+data:
+  uuid: VE9ET19SQU5ET01fVEVMRU1FVFJZX1VVSUQ=
+---
+# Source: telemetry/templates/kubermatic-role.yaml
+# Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: telemetry-kubermatic-agent-role
+rules:
+- apiGroups:
+  - kubermatic.k8s.io
+  resources:
+  - seeds
+  - clusters
+  - users
+  - projects
+  - usersshkeies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - operator.kubermatic.io
+  resources:
+  - kubermaticconfigurations
+  verbs:
+  - list
+---
+# Source: telemetry/templates/kubernetes-role.yaml
+# Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: telemetry-kubernetes-agent-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: telemetry/templates/kubermatic-rolebinding.yml
+# Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: telemetry-kubermatic-agent-role
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: telemetry-kubermatic-agent-role
+subjects:
+  - kind: ServiceAccount
+    name: telemetry-agent-sa
+    namespace: telemetry-system
+---
+# Source: telemetry/templates/kubernetes-rolebinding.yml
+# Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: telemetry-kubernetes-agent-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: telemetry-kubernetes-agent-role
+subjects:
+  - kind: ServiceAccount
+    name: telemetry-agent-sa
+    namespace: telemetry-system
+---
+# Source: telemetry/templates/cronjob.yaml
+# Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: telemetry-job
+  namespace: telemetry-system
+spec:
+  schedule:  0 0 * * *
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            control-plane: telemetry
+        spec:
+          serviceAccountName: telemetry-agent-sa
+          initContainers:
+            - name: kubernetes-agent
+              image: "quay.io/kubermatic/telemetry-kubernetes-agent:v0.1.0"
+              imagePullPolicy: Always
+              args:
+                - "--record-dir=$(RECORD_DIR)"
+              env:
+                - name: RECORD_DIR
+                  value: "/records"
+              volumeMounts:
+                - name: records
+                  mountPath: "/records"
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: 100Mi
+                requests:
+                  cpu: "0.5"
+                  memory: 100Mi
+            - name: kubermatic-agent
+              image: "quay.io/kubermatic/telemetry-kubermatic-agent:v0.1.0"
+              imagePullPolicy: Always
+              args:
+                - "--record-dir=$(RECORD_DIR)"
+              env:
+                - name: RECORD_DIR
+                  value: "/records"
+              volumeMounts:
+                - name: records
+                  mountPath: "/records"
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: 100Mi
+                requests:
+                  cpu: "0.5"
+                  memory: 100Mi
+          containers:
+            - name: reporter
+              image: "quay.io/kubermatic/telemetry-reporter:v0.1.0"
+              imagePullPolicy: Always
+              args:
+                - "http"
+                - "--client-uuid=$(CLIENT_UUID)"
+                - "--url=$(URL)"
+                - "--record-dir=$(RECORD_DIR)"
+              env:
+                - name: RECORD_DIR
+                  value: "/records"
+                - name: URL
+                  value: "https://telemetry.k8c.io/api/v1"
+                - name: CLIENT_UUID
+                  valueFrom:
+                    secretKeyRef:
+                      name: telemetry-client-uuid
+                      key: uuid
+              volumeMounts:
+                - mountPath: "/records"
+                  name: records
+              resources:
+                limits:
+                  cpu: "1"
+                  memory: 100Mi
+                requests:
+                  cpu: "0.5"
+                  memory: 100Mi
+          volumes:
+            - name: records
+              emptyDir: {}
+          restartPolicy: OnFailure
