@@ -7,11 +7,17 @@ In this **Get Started with KKP** guide, we will be using AWS Cloud as our underl
 
 > For more information on the kubeone configurations for different enviornemnt, checkout the [Creating the kubernetes Cluster using Kubeone](https://docs.kubermatic.com/kubeone/master/tutorials/creating_clusters/) documentation.
 
-The [kubermatic/kkp-on-node](https://github.com/kubermatic/kkp-on-node) contains the required configuration to install KKP on single node k8s with kubeone. Clone or download it, so that you deploy KKP quickly as per the following instructions and get started with it!  
+## Download the repository
+
+The [kubermatic/kkp-single-node](https://github.com/kubermatic/kkp-single-node) contains the required configuration to install KKP on single node k8s with kubeone. Clone or download it, so that you deploy KKP quickly as per the following instructions and get started with it!
+```bash
+git clone https://github.com/kubermatic/kkp-single-node.git
+cd kkp-single-node
+``` 
 
 ## Configure the Enviornment
 
-```
+```bash
 export AWS_ACCESS_KEY_ID=xxxxxxxxxxxxxxx
 export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxx
 ```
@@ -64,20 +70,24 @@ export KUBECONFIG=$PWD/aws/<cluster_name>-kubeconfig
 
 ## Validate the KKP Master setup
 
-Get the LoadBalancer External IP by following command.
-```bash
-kubectl get svc -n ingress-nginx
-```
-> Update DNS mapping with External IP of for nginx ingress controller service. 
+- Get the LoadBalancer External IP by following command.
+  ```bash
+  kubectl get svc -n ingress-nginx
+  ```
 
-Verify the Kubermatic resources and certificates
-```bash
-kubectl -n kubermatic get deployments,pods
-```
-```bash
-kubectl get certificates -A -w
-```
-> Wait for while, if still kubermatic-api-xxx pods / kubermatic & dex tls certificates are not in Ready state, delete  and wait to get validated.
+- Update DNS mapping with External IP of for nginx ingress controller service. 
+
+- Nginx Ingress Controller Load Balancer configuration - Add the node to backend pool manually.
+  > **Known Issue**: Should be supported in the future as part of Feature request[#1822](https://github.com/kubermatic/kubeone/issues/1822)
+
+- Verify the Kubermatic resources and certificates
+  ```bash
+  kubectl -n kubermatic get deployments,pods
+  ```
+  ```bash
+  kubectl get certificates -A -w
+  ```
+  > Wait for a while, if still kubermatic-api-xxx pods / kubermatic & dex tls certificates are not in Ready state, delete  and wait to get validated.
 
 ## Login to KKP Dashboard
 
@@ -98,8 +108,3 @@ make k1-reset PROVIDER=aws
 ```bash
 make k1-tf-destroy PROVIDER=aws
 ```
-
-# Known Open Issues
-
-* Nginx Ingress Controller Load Balancer configuration - Add the node to backend pool manually.
-> Should be supported in future as part of Feature request[#1822](https://github.com/kubermatic/kubeone/issues/1822)
