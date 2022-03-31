@@ -1,0 +1,9 @@
+.envrc
+*.tar.gz
+tf.json
+*terraform.tfstate*
+.terraform
+.terraform.lock.hcl
+terraform.tfvars
+*kubeconfig
+!*kubeconfig/

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The KubeOne Authors.
+Copyright 2022 The KKP Single Node Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ variable "worker_os" {
   # * flatcar
   # * rhel
   # * amzn2
-  default = ""
+  default = "ubuntu"
   type    = string
 }
 
@@ -77,7 +77,7 @@ variable "bastion_user" {
 # Provider specific settings
 
 variable "aws_region" {
-  default     = "eu-west-3"
+  default     = "eu-central-1"
   description = "AWS region to speak to"
   type        = string
 
@@ -90,7 +90,7 @@ variable "vpc_id" {
 }
 
 variable "control_plane_type" {
-  default     = "t3.medium"
+  default     = "t3.xlarge"
   description = "AWS instance type"
 }
 
@@ -184,7 +184,7 @@ variable "open_nodeports" {
 }
 
 variable "initial_machinedeployment_replicas" {
-  default     = 1
+  default     = 0
   description = "number of replicas per MachineDeployment"
   type        = number
 
@@ -210,6 +210,6 @@ variable "worker_deploy_ssh_key" {
 
 variable "control_plane_vm_count" {
   description = "Number of control plane instances"
-  default     = 3
+  default     = 1
   type        = number
 }
